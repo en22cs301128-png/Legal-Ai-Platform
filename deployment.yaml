@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legalai-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: legalai-web
+  template:
+    metadata:
+      labels:
+        app: legalai-web
+    spec:
+      containers:
+      - name: legalai-web
+        image: legalai-web:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          value: "postgres://legal_user:legal_password@legalai-db:5432/legal_cases_db"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legalai-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: legalai-ai
+  template:
+    metadata:
+      labels:
+        app: legalai-ai
+    spec:
+      containers:
+      - name: legalai-ai
+        image: legalai-ai:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: legalai-secrets
+              key: openai-api-key
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legalai-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: legalai-db
+  template:
+    metadata:
+      labels:
+        app: legalai-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: legal_user
+        - name: POSTGRES_PASSWORD
+          value: legal_password
+        - name: POSTGRES_DB
+          value: legal_cases_db

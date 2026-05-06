@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legalai-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: legalai.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: legalai-web
+            port:
+              number: 80
+      - path: /api/ai
+        pathType: Prefix
+        backend:
+          service:
+            name: legalai-ai
+            port:
+              number: 8000
